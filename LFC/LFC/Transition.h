@@ -7,10 +7,15 @@ private:
 	char m_symbol;
 	std::string m_deltaQf;
 public:
-	Transition() = default;
-	Transition( const std::string& deltaQs,  char symbol, const std::string& deltaQf)
+	Transition(const std::string& deltaQs, char symbol, const std::string& deltaQf)
 		: m_deltaQs(deltaQs), m_symbol(symbol), m_deltaQf(deltaQf)
 	{}
+	Transition()
+	{
+		m_deltaQs = "nullptr";
+		m_symbol = 'n';
+		m_deltaQf = "nullptr";
+	}
 	std::string GetStartState() const {
 		return m_deltaQs;
 	}

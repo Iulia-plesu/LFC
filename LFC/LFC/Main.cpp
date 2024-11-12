@@ -12,7 +12,7 @@ int main() {
     DeterministicFiniteAutomaton dfa(states, alphabet, initialState, finalStates);
 
     // Add transitions
-    dfa.AddTransition("q0", 'a', "q1");
+    dfa.AddTransition("q0", 'a', "q2");
     dfa.AddTransition("q1", 'b', "q2");
 
     // Verify DFA

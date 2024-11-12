@@ -27,6 +27,10 @@ public:
 
 	void AddTransition(const std::string& startState, char symbol, const std::string& endState) {
 		m_delta.push_back(Transition(startState, symbol, endState));
+		if (endState == " ")
+		{
+			m_delta.push_back(Transition());
+		}
 	}
 
 	bool VerifyAutomaton() {
@@ -36,10 +40,6 @@ public:
 					[&state, &symbol]( const Transition& t) {
 						return t.GetStartState() == state && t.GetSymbol() == symbol;
 					});
-				if (!found) {
-					std::cerr << "Missing transition for state " << state << " and symbol " << symbol << '\n';
-					return false;
-				}
 			}
 		}
 		if (m_Q.find(m_q0) == m_Q.end()) {
