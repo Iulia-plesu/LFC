@@ -72,13 +72,13 @@ public:
 	friend std::ostream& operator<<(std::ostream& os, const DeterministicFiniteAutomaton& dfa) {
 		os << "States (Q): { ";
 		for (const auto& state : dfa.m_Q) os << state << " ";
-		os << "}\nAlphabet (Σ): { ";
+		os << "}\nAlphabet (Sigma): { ";
 		for (const auto& symbol : dfa.m_sigma) os << symbol << " ";
 		os << "}\nInitial State (q0): " << dfa.m_q0 << "\nFinal States (F): { ";
 		for (const auto& finalState : dfa.m_F) os << finalState << " ";
-		os << "}\nTransitions (δ):\n";
+		os << "}\nTransitions (Delta):\n";
 		for (const auto& transition : dfa.m_delta) {
-			os << "  δ(" << transition.GetStartState() << ", " << transition.GetSymbol()
+			os << "  delta(" << transition.GetStartState() << ", " << transition.GetSymbol()
 				<< ") -> " << transition.GetEndState() << "\n";
 		}
 		return os;
