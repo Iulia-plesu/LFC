@@ -1,31 +1,29 @@
-#include "DeterministicFiniteAutomaton.h"
-#include <iostream>
-
+﻿#include<iostream>
+#include"DeterministicFiniteAutomaton.h"
 int main() {
-    
-    std::set<std::string> states = { "q0", "q1"};
-    std::set<char> alphabet = { 'a', 'b' };
-    std::string initialState = "q0";
-    std::set<std::string> finalStates = { "q1" };
+    // Automat 1: q0, a -> q1
+    std::set<std::string> states1 = { "q0", "q1" };
+    std::set<char> alphabet1 = { 'a' };
+    std::string initialState1 = "q0";
+    std::set<std::string> finalStates1 = { "q1" };
 
-    DeterministicFiniteAutomaton dfa(states, alphabet, initialState, finalStates);
+    DeterministicFiniteAutomaton dfa1(states1, alphabet1, initialState1, finalStates1);
+    dfa1.AddTransition("q0", 'a', "q1");
 
-    dfa.AddTransition("q0", 'a', "q0");
-    dfa.AddTransition("q0", 'b', "q1");
-    dfa.AddTransition("q1", 'b', "q1");
+    // Automat 2: q1, b -> q2
+    std::set<std::string> states2 = { "q1", "q2" };
+    std::set<char> alphabet2 = { 'b' };
+    std::string initialState2 = "q1";
+    std::set<std::string> finalStates2 = { "q2" };
 
-   
-    if (!dfa.VerifyAutomaton()) {
-        std::cerr << "DFA verification failed.\n";
-        return 1;
-    }
+    DeterministicFiniteAutomaton dfa2(states2, alphabet2, initialState2, finalStates2);
+    dfa2.AddTransition("q1", 'b', "q2");
 
-    
-    std::cout << dfa;
+    // Concatenare cu tranziție epsilon
+    DeterministicFiniteAutomaton concatenatedDFA = Concatenate(dfa1, dfa2);
 
-    std::string word1 = "aaabbb";
-    
-    std::cout << "Word \"" << word1 << "\" is " << (dfa.CheckWord(word1) ? "accepted" : "rejected") << " by the DFA.\n";
+    // Afișăm automatul concatenat
+    concatenatedDFA.PrintAutomaton();
 
     return 0;
 }

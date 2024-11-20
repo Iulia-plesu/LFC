@@ -1,0 +1,9 @@
+States (Q): { q0 q1 q2 }
+Alphabet (Sigma): { a b }
+Initial State (q0): q0
+Final States (F): { q2 }
+Transitions (Delta):
+  delta(q0, a) -> q1
+  delta(q0, b) -> q1
+  delta(q1, a) -> q2
+  delta(q1, b) -> q2
