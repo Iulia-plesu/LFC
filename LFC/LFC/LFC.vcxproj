@@ -130,6 +130,7 @@
     <ClInclude Include="DeterministicFiniteAutomaton.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="DeterministicFiniteAutomaton.cpp" />
     <ClCompile Include="Main.cpp" />
   </ItemGroup>
   <ItemGroup>
