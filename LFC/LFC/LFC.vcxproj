@@ -134,6 +134,9 @@
     <ClCompile Include="Main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <Text Include="auto.txt" />
+    <Text Include="exp.txt" />
+    <Text Include="output.txt" />
     <Text Include="regex.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

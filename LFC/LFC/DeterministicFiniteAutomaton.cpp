@@ -14,6 +14,22 @@ DeterministicFiniteAutomaton::DeterministicFiniteAutomaton(const std::set<std::s
 	const std::string& q0, 
 	const std::set<std::string>& F): m_Q(Q), m_sigma(sigma), m_delta(delta), m_q0(q0), m_F(F) {}
 
+
+
+
+bool DeterministicFiniteAutomaton::CheckWord(const std::string& input) const
+{
+	std::string currentState = m_q0;
+	for (char symbol : input) {
+		auto it = m_delta.find({ currentState, symbol });
+		if (it == m_delta.end()) {
+			return false; 
+		}
+		currentState = it->second;
+	}
+	return m_F.find(currentState) != m_F.end();
+}
+
 void DeterministicFiniteAutomaton::AddTransition(const std::string& startState, char symbol, const std::string& endState)
 {
 	m_delta[{startState, symbol}] = endState;
@@ -32,20 +48,6 @@ bool DeterministicFiniteAutomaton::VerifyAutomaton() const
 		}
 	}
 	return true;
-}
-
-bool DeterministicFiniteAutomaton::CheckWord(const std::string& word) const
-{
-	std::string currentState = m_q0;
-	for (char symbol : word) {
-		
-		auto it = m_delta.find({ currentState, symbol });
-		if (it == m_delta.end()) {
-			return false; 
-		}
-		currentState = it->second; 
-	}
-	return m_F.find(currentState) != m_F.end(); 
 }
 
 void DeterministicFiniteAutomaton::PrintAutomaton() const
@@ -241,14 +243,14 @@ DeterministicFiniteAutomaton Union(const DeterministicFiniteAutomaton& a1, const
 	auto a2Transitions = a2.GetTransitions();
 	transitions.insert(a2Transitions.begin(), a2Transitions.end());
 
-	// Adăugăm tranziții epsilon
-	transitions[{a1.GetInitialState(), '\0'}] = newStart; // new_start -> q0 din a1
-	transitions[{a2.GetInitialState(), '\0'}] =newStart; // new_start -> q2 din a2
+
+	transitions[{newStart, '\0'}] = a1.GetInitialState();
+	transitions[{newStart, 'L'}] = a2.GetInitialState();
 	for (const auto& state : a1.GetFinalStates()) {
-		transitions[{state, '\0'}] = newFinal; // q1 -> new_final
+		transitions[{state, '\0'}] = newFinal; 
 	}
 	for (const auto& state : a2.GetFinalStates()) {
-		transitions[{state, '\0'}] = newFinal; // q3 -> new_final
+		transitions[{state, '\0'}] = newFinal;
 	}
 
 	// 5. Returnăm noul automat
@@ -269,12 +271,14 @@ DeterministicFiniteAutomaton Star(const DeterministicFiniteAutomaton& a) {
 	std::map<std::pair<std::string, char>, std::string> transitions = a.GetTransitions();
 
 	// Adăugăm tranziții lambda
-	transitions[{a.GetInitialState(), '\0'}] = newStart;  // new_start -> vechea stare inițială
-	transitions[{newStart, '\0'}] = newFinal;            // new_start -> new_final
-	for (const auto& state : a.GetFinalStates()) {
-		transitions[{a.GetInitialState(), '\0'}] = state; // vechea stare finală -> vechea stare inițială
-		transitions[{state, '\0'}] = newFinal;           // vechea stare finală -> new_final
+	transitions[{newStart, '\0'}] = a.GetInitialState();  // new_start -> vechea stare inițială
+	transitions[{newStart, 'L'}] = newFinal;            // new_start -> new_final
+for (const auto& state : a.GetFinalStates()) 
+	{
+    transitions[{state, '\0'}] = a.GetInitialState(); // vechea stare finală -> vechea stare inițială
+    transitions[{state, '\0'}] = newFinal;           // vechea stare finală -> new_final
 	}
+
 
 	return DeterministicFiniteAutomaton(states, alphabet, transitions, newStart, { newFinal });
 }
@@ -305,4 +309,54 @@ DeterministicFiniteAutomaton BuildAutomatonFromRPN(const std::string& rpn)
 	}
 
 	return stack.top();  // Automat rezultat
+}
+
+DeterministicFiniteAutomaton BuildAutomatonFromFile(const std::string& filename)
+{
+
+std::ifstream file(filename);
+
+std::set<std::string> states;
+std::set<char> alphabet;
+std::string initialState;
+std::set<std::string> finalStates;
+std::map<std::pair<std::string, char>, std::string> transitions;
+
+std::string line;
+
+
+std::getline(file, line);
+std::istringstream statesStream(line);
+std::string state;
+while (statesStream >> state) {
+	states.insert(state);
+}
+
+std::getline(file, line);
+std::istringstream alphabetStream(line);
+char symbol;
+while (alphabetStream >> symbol) {
+	alphabet.insert(symbol);
+}
+
+std::getline(file, line);
+initialState = line;
+
+std::getline(file, line);
+std::istringstream finalStatesStream(line);
+while (finalStatesStream >> state) {
+	finalStates.insert(state);
+}
+
+while (std::getline(file, line)) {
+	std::istringstream transitionStream(line);
+	std::string startState, endState;
+	char transitionSymbol;
+	transitionStream >> startState >> transitionSymbol >> endState;
+	transitions[{startState, transitionSymbol}] = endState;
+}
+
+file.close();
+
+return DeterministicFiniteAutomaton(states, alphabet, transitions, initialState, finalStates);
 }
