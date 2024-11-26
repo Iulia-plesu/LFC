@@ -276,7 +276,7 @@ DeterministicFiniteAutomaton Star(const DeterministicFiniteAutomaton& a) {
 for (const auto& state : a.GetFinalStates()) 
 	{
     transitions[{state, '\0'}] = a.GetInitialState(); // vechea stare finală -> vechea stare inițială
-    transitions[{state, '\0'}] = newFinal;           // vechea stare finală -> new_final
+    transitions[{state, 'L'}] = newFinal;           // vechea stare finală -> new_final
 	}
 
 
