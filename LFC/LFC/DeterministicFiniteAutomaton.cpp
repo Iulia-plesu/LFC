@@ -1,6 +1,6 @@
 ﻿#include"DeterministicFiniteAutomaton.h"
 #include<iostream>
-#include <sstream>
+#include<queue>
 
 DeterministicFiniteAutomaton::DeterministicFiniteAutomaton(const std::set<std::string>& Q, 
 	const std::set<char>& sigma, 
@@ -10,66 +10,104 @@ DeterministicFiniteAutomaton::DeterministicFiniteAutomaton(const std::set<std::s
 
 DeterministicFiniteAutomaton::DeterministicFiniteAutomaton(const std::set<std::string>& Q,
 	const std::set<char>& sigma, 
-	const std::map<std::pair<std::string, char>, std::string>& delta, 
+	const std::map<std::pair<std::string, char>, std::set<std::string>>& delta,
 	const std::string& q0, 
 	const std::set<std::string>& F): m_Q(Q), m_sigma(sigma), m_delta(delta), m_q0(q0), m_F(F) {}
 
 
 
 
-bool DeterministicFiniteAutomaton::CheckWord(const std::string& input) const
-{
-	std::string currentState = m_q0;
+bool DeterministicFiniteAutomaton::CheckWord(const std::string& input) const {
+	std::string currentState = m_q0; // Starea de start
+
 	for (char symbol : input) {
+		// Căutăm tranziția corespunzătoare pentru starea curentă și simbolul dat
 		auto it = m_delta.find({ currentState, symbol });
+
 		if (it == m_delta.end()) {
-			return false; 
+			// Dacă nu există o tranziție validă, returnăm false
+			return false;
 		}
-		currentState = it->second;
+
+		// Se presupune că pentru un simbol există un set de stări de destinație
+		const std::set<std::string>& toStates = it->second;
+
+		if (toStates.empty()) {
+			// Dacă nu există stări de destinație (ar trebui să existe cel puțin una), returnăm false
+			return false;
+		}
+
+		// Alegem prima stare din setul de destinație
+		// (presupunem că automatul este determinist și există o singură stare de destinație)
+		currentState = *toStates.begin();
 	}
+
+	// La final, verificăm dacă starea curentă este una dintre stările finale
 	return m_F.find(currentState) != m_F.end();
 }
 
+
 void DeterministicFiniteAutomaton::AddTransition(const std::string& startState, char symbol, const std::string& endState)
 {
-	m_delta[{startState, symbol}] = endState;
+	m_delta[{startState, symbol}].insert(endState);
 }
 
 bool DeterministicFiniteAutomaton::VerifyAutomaton() const
 {
+	// Verificăm dacă toate stările din tranziții există în mulțimea de stări m_Q
 	for (const auto& transition : m_delta) {
-		if (m_Q.find(transition.first.first) == m_Q.end()) {
-			std::cerr << "Error: Start state " << transition.first.first << " not in states.\n";
+		const std::string& fromState = transition.first.first; // Starea de plecare
+		char symbol = transition.first.second; // Simbolul de tranziție
+		const std::set<std::string>& toStates = transition.second; // Setul de stări de destinație
+
+		// Verificăm dacă starea de plecare există în stările definite
+		if (m_Q.find(fromState) == m_Q.end()) {
+			std::cerr << "Error: Start state " << fromState << " not in states.\n";
 			return false;
 		}
-		if (m_Q.find(transition.second) == m_Q.end()) {
-			std::cerr << "Error: End state " << transition.second << " not in states.\n";
-			return false;
+
+		// Verificăm dacă toate stările de destinație există în stările definite
+		for (const auto& toState : toStates) {
+			if (m_Q.find(toState) == m_Q.end()) {
+				std::cerr << "Error: End state " << toState << " not in states.\n";
+				return false;
+			}
 		}
 	}
+
 	return true;
 }
 
-void DeterministicFiniteAutomaton::PrintAutomaton() const
-{
+void DeterministicFiniteAutomaton::PrintAutomaton() const {
 	std::cout << "States: ";
-	for (const auto& state : m_Q) std::cout << state << " ";
+	for (const auto& state : m_Q) {
+		std::cout << state << " ";
+	}
 
 	std::cout << "\nAlphabet: ";
+	for (const auto& symbol : m_sigma) {
+		std::cout << symbol << " ";
+	}
 
-	for (const auto& symbol : m_sigma) std::cout << symbol << " ";
+	std::cout << "\nInitial state: " << m_q0
+		<< "\nFinal states: ";
+	for (const auto& finalState : m_F) {
+		std::cout << finalState << " ";
+	}
 
-	std::cout << "\nInitial state: " << m_q0 
-	<<"\nFinal states: ";
-
-	for (const auto& finalState : m_F) std::cout << finalState << " ";
 	std::cout << "\nTransitions:\n";
-
+	// Iterating over transitions
 	for (const auto& transition : m_delta) {
-		std::cout << transition.first.first << " --" << transition.first.second
-			<< "--> " << transition.second << "\n";
+		const auto& fromState = transition.first.first;
+		char symbol = transition.first.second;
+		const auto& toStates = transition.second;
+
+		for (const auto& toState : toStates) {
+			std::cout << fromState << " --" << symbol << "--> " << toState << "\n";
+		}
 	}
 }
+
 
 const std::set<std::string>& DeterministicFiniteAutomaton::GetStates() const
 {
@@ -91,7 +129,7 @@ const std::set<std::string>& DeterministicFiniteAutomaton::GetFinalStates() cons
 	 return m_F; 
 }
 
-const std::map<std::pair<std::string, char>, std::string>& DeterministicFiniteAutomaton::GetTransitions() const
+const std::map<std::pair<std::string, char>, std::set<std::string>>& DeterministicFiniteAutomaton::GetTransitions() const
 {
 	 return m_delta; 
 }
@@ -201,7 +239,7 @@ DeterministicFiniteAutomaton Concatenate(const DeterministicFiniteAutomaton& a1,
 	alphabet.insert(a2.GetAlphabet().begin(), a2.GetAlphabet().end()); // Adăugăm alfabetul lui a2
 
 	// 3. Adaugă tranzițiile celor două automate
-	std::map<std::pair<std::string, char>, std::string> transitions = a1.GetTransitions();  // Tranzițiile lui a1
+	std::map<std::pair<std::string, char>, std::set<std::string>> transitions = a1.GetTransitions();  // Tranzițiile lui a1
 	auto a2Transitions = a2.GetTransitions();  // Tranzițiile lui a2
 
 	// Adăugăm tranzițiile din a2 la a1
@@ -217,7 +255,7 @@ DeterministicFiniteAutomaton Concatenate(const DeterministicFiniteAutomaton& a1,
 
 	// 6. Adăugăm tranziție epsilon de la stările finale ale lui a1 la starea inițială a lui a2
 	for (const auto& state : a1.GetFinalStates()) {
-		transitions[{state, '\0'}] = a2.GetInitialState();  // Epsilon tranziție de la q1 din a1 la q1 din a2
+		transitions[{state, '\0'}].insert(a2.GetInitialState());  // Epsilon tranziție de la q1 din a1 la q1 din a2
 	}
 
 	// 7. Returnăm noul DFA concatenat
@@ -239,18 +277,18 @@ DeterministicFiniteAutomaton Union(const DeterministicFiniteAutomaton& a1, const
 	alphabet.insert(a2.GetAlphabet().begin(), a2.GetAlphabet().end());
 
 	// 4. Combinăm tranzițiile
-	std::map<std::pair<std::string, char>, std::string> transitions = a1.GetTransitions();
+	std::map<std::pair<std::string, char>, std::set<std::string>> transitions = a1.GetTransitions();
 	auto a2Transitions = a2.GetTransitions();
 	transitions.insert(a2Transitions.begin(), a2Transitions.end());
 
 
-	transitions[{newStart, '\0'}] = a1.GetInitialState();
-	transitions[{newStart, 'L'}] = a2.GetInitialState();
+	transitions[{newStart, '\0'}].insert(a1.GetInitialState());
+	transitions[{newStart, '\0'}].insert( a2.GetInitialState());
 	for (const auto& state : a1.GetFinalStates()) {
-		transitions[{state, '\0'}] = newFinal; 
+		transitions[{state, '\0'}].insert( newFinal); 
 	}
 	for (const auto& state : a2.GetFinalStates()) {
-		transitions[{state, '\0'}] = newFinal;
+		transitions[{state, '\0'}] .insert( newFinal);
 	}
 
 	// 5. Returnăm noul automat
@@ -268,15 +306,15 @@ DeterministicFiniteAutomaton Star(const DeterministicFiniteAutomaton& a) {
 
 	// Preluăm alfabetul și tranzițiile existente
 	std::set<char> alphabet = a.GetAlphabet();
-	std::map<std::pair<std::string, char>, std::string> transitions = a.GetTransitions();
+	std::map<std::pair<std::string, char>, std::set<std::string>> transitions = a.GetTransitions();
 
 	// Adăugăm tranziții lambda
-	transitions[{newStart, '\0'}] = a.GetInitialState();  // new_start -> vechea stare inițială
-	transitions[{newStart, 'L'}] = newFinal;            // new_start -> new_final
+	transitions[{newStart, '\0'}] .insert(a.GetInitialState());  // new_start -> vechea stare inițială
+	transitions[{newStart, '\0'}] .insert( newFinal);            // new_start -> new_final
 for (const auto& state : a.GetFinalStates()) 
 	{
-    transitions[{state, '\0'}] = a.GetInitialState(); // vechea stare finală -> vechea stare inițială
-    transitions[{state, 'L'}] = newFinal;           // vechea stare finală -> new_final
+    transitions[{state, '\0'}].insert(a.GetInitialState()); // vechea stare finală -> vechea stare inițială
+    transitions[{state, '\0'}] .insert( newFinal);           // vechea stare finală -> new_final
 	}
 
 
@@ -311,52 +349,5 @@ DeterministicFiniteAutomaton BuildAutomatonFromRPN(const std::string& rpn)
 	return stack.top();  // Automat rezultat
 }
 
-DeterministicFiniteAutomaton BuildAutomatonFromFile(const std::string& filename)
-{
-
-std::ifstream file(filename);
-
-std::set<std::string> states;
-std::set<char> alphabet;
-std::string initialState;
-std::set<std::string> finalStates;
-std::map<std::pair<std::string, char>, std::string> transitions;
-
-std::string line;
 
 
-std::getline(file, line);
-std::istringstream statesStream(line);
-std::string state;
-while (statesStream >> state) {
-	states.insert(state);
-}
-
-std::getline(file, line);
-std::istringstream alphabetStream(line);
-char symbol;
-while (alphabetStream >> symbol) {
-	alphabet.insert(symbol);
-}
-
-std::getline(file, line);
-initialState = line;
-
-std::getline(file, line);
-std::istringstream finalStatesStream(line);
-while (finalStatesStream >> state) {
-	finalStates.insert(state);
-}
-
-while (std::getline(file, line)) {
-	std::istringstream transitionStream(line);
-	std::string startState, endState;
-	char transitionSymbol;
-	transitionStream >> startState >> transitionSymbol >> endState;
-	transitions[{startState, transitionSymbol}] = endState;
-}
-
-file.close();
-
-return DeterministicFiniteAutomaton(states, alphabet, transitions, initialState, finalStates);
-}

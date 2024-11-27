@@ -14,7 +14,7 @@
 class DeterministicFiniteAutomaton {
 private:
     // Cheia este un std::pair <startState, symbol>, iar valoarea este endState
-    std::map<std::pair<std::string, char>, std::string> m_delta;
+    std::map<std::pair<std::string, char>, std::set<std::string>> m_delta;
     std::set<std::string> m_Q; // Set de stări
     std::set<char> m_sigma;    // Alfabetul
     std::string m_q0;          // Starea inițială
@@ -28,7 +28,7 @@ public:
         const std::set<std::string>& F);
     DeterministicFiniteAutomaton(const std::set<std::string>& Q,
         const std::set<char>& sigma,
-        const std::map<std::pair<std::string, char>, std::string>& delta,
+        const std::map<std::pair<std::string, char>, std::set<std::string>>& delta,
         const std::string& q0,
         const std::set<std::string>& F);
 
@@ -67,7 +67,7 @@ public:
     const std::set<std::string>& GetFinalStates() const;
 
     
-    const std::map<std::pair<std::string, char>, std::string>& GetTransitions() const;
+    const std::map<std::pair<std::string, char>, std::set<std::string>>& GetTransitions() const;
    
 };
 
@@ -87,5 +87,4 @@ DeterministicFiniteAutomaton Star(const DeterministicFiniteAutomaton& a);
 
 
 DeterministicFiniteAutomaton BuildAutomatonFromRPN(const std::string & rpn);
-DeterministicFiniteAutomaton BuildAutomatonFromFile(const std::string& filename);
 

@@ -37,26 +37,37 @@ std::string ReadRegexFromFile(const std::string& filename) {
 
 void WriteAutomatonToFile(const DeterministicFiniteAutomaton& dfa, const std::string& filename) {
     std::ofstream file(filename);
-    dfa.PrintAutomaton(); 
+
     file << "States: ";
-    for (const auto& state : dfa.GetStates()) file << state << " ";
+    for (const auto& state : dfa.GetStates()) {
+        file << state << " ";
+    }
 
     file << "\nAlphabet: ";
-
-    for (const auto& symbol : dfa.GetAlphabet()) file << symbol << " ";
+    for (const auto& symbol : dfa.GetAlphabet()) {
+        file << symbol << " ";
+    }
 
     file << "\nInitial state: " << dfa.GetInitialState()
         << "\nFinal states: ";
-
-    for (const auto& finalState : dfa.GetFinalStates()) file << finalState << " ";
-    file << "\nTransitions:\n";
-
-    for (const auto& transition : dfa.GetTransitions()) {
-        file << transition.first.first << " --" << transition.first.second
-            << "--> " << transition.second << "\n";
+    for (const auto& finalState : dfa.GetFinalStates()) {
+        file << finalState << " ";
     }
+
+    file << "\nTransitions:\n";
+    // Iterating over transitions
+    for (const auto& transition : dfa.GetTransitions()) {
+        const auto& fromState = transition.first.first;
+        char symbol = transition.first.second;
+        const auto& toStates = transition.second;
+
+        for (const auto& toState : toStates) {
+            file << fromState << " --" << symbol << "--> " << toState << "\n";
+        }
+    }
+
     file.close();
-    file << "The automaton has been saved in the file " << filename << "\n";
+    std::cout << "The automaton has been saved in the file " << filename << "\n";
 }
 
 int main() {
@@ -71,62 +82,61 @@ int main() {
     std::cout << "The regular expression is valid.\n";
 
     std::string rpn = polishForm(regex);
-    DeterministicFiniteAutomaton dfa;
-    dfa = BuildAutomatonFromFile("auto.txt"); 
     DeterministicFiniteAutomaton nfa;
     nfa = BuildAutomatonFromRPN(rpn); 
+    nfa.PrintAutomaton();
     char option;
-    do {
-        DisplayMenu();
-        std::cout << "Select the desired option: ";
-        std::cin >> option;
+    //do {
+    //    DisplayMenu();
+    //    std::cout << "Select the desired option: ";
+    //    std::cin >> option;
 
-        switch (option) {
-        case 'a':
-            std::cout << "Readable regular expression: " << rpn << "\n";
-            break;
+    //    switch (option) {
+    //    case 'a':
+    //        std::cout << "Readable regular expression: " << rpn << "\n";
+    //        break;
 
-        case 'b':
-            std::cout << "Displaying automaton M:\n";
-            WriteAutomatonToFile(dfa, "output.txt");
-            break;
+    //    case 'b':
+    //        std::cout << "Displaying automaton M:\n";
+    //       /* WriteAutomatonToFile(dfa, "output.txt");*/
+    //        break;
 
-        case 'c': {
-            std::string word;
-            std::cout << "Enter the word to check: ";
-            std::cin >> word;
-            if (dfa.CheckWord(word)) {
-                std::cout << "The word \"" << word << "\" is accepted by the automaton.\n";
-            }
-            else {
-                std::cout << "The word \"" << word << "\" is not accepted by the automaton.\n";
-            }
-            break;
-        }
-        case 'd':
-        {
-            std::cout << "Nondeterministic automaton with lambda transitions:\n";
-            nfa.PrintAutomaton();
-            break;
-        }
-        case 'e':
-            if (dfa.VerifyAutomaton())
-            {
-                std::cout << "Is a valid automaton\n";
-            }
-            else
-            {
-                std::cout << "Is not a valid automaton \n";
-            }
-            break;
-        case 'f':
-            std::cout << "Exiting the program.\n";
-            break;
-        default:
-            std::cout << "Invalid option. Please try again.\n";
-        }
+    //    case 'c': {
+    //        std::string word;
+    //        std::cout << "Enter the word to check: ";
+    //        std::cin >> word;
+    //        if (dfa.CheckWord(word)) {
+    //            std::cout << "The word \"" << word << "\" is accepted by the automaton.\n";
+    //        }
+    //        else {
+    //            std::cout << "The word \"" << word << "\" is not accepted by the automaton.\n";
+    //        }
+    //        break;
+    //    }
+    //    case 'd':
+    //    {
+    //        std::cout << "Nondeterministic automaton with lambda transitions:\n";
+    //        nfa.PrintAutomaton();
+    //        break;
+    //    }
+    //    case 'e':
+    //        if (dfa.VerifyAutomaton())
+    //        {
+    //            std::cout << "Is a valid automaton\n";
+    //        }
+    //        else
+    //        {
+    //            std::cout << "Is not a valid automaton \n";
+    //        }
+    //        break;
+    //    case 'f':
+    //        std::cout << "Exiting the program.\n";
+    //        break;
+    //    default:
+    //        std::cout << "Invalid option. Please try again.\n";
+    //    }
 
-    } while (option != 'f');
+    //} while (option != 'f');
 
     return 0;
 }
