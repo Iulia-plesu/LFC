@@ -10,15 +10,14 @@
 #include <string>
 #include <iostream>
 
-
+#pragma once
 class DeterministicFiniteAutomaton {
 private:
-    // Cheia este un std::pair <startState, symbol>, iar valoarea este endState
     std::map<std::pair<std::string, char>, std::set<std::string>> m_delta;
-    std::set<std::string> m_Q; // Set de stări
-    std::set<char> m_sigma;    // Alfabetul
-    std::string m_q0;          // Starea inițială
-    std::set<std::string> m_F; // Stările finale
+    std::set<std::string> m_Q;
+    std::set<char> m_sigma;  
+    std::string m_q0;          
+    std::set<std::string> m_F; 
 
 public:
     DeterministicFiniteAutomaton() = default;
@@ -69,6 +68,9 @@ public:
     
     const std::map<std::pair<std::string, char>, std::set<std::string>>& GetTransitions() const;
    
+    void PrintTransitionTable(const DeterministicFiniteAutomaton& dfa);
+
+
 };
 
 int priority(char op);
@@ -88,3 +90,12 @@ DeterministicFiniteAutomaton Star(const DeterministicFiniteAutomaton& a);
 
 DeterministicFiniteAutomaton BuildAutomatonFromRPN(const std::string & rpn);
 
+
+
+std::set<std::string> LambdaClosure(
+    const std::string& state,
+    const std::map<std::pair<std::string, char>, std::set<std::string>>& transitions);
+
+
+
+DeterministicFiniteAutomaton ConvertLambdaNFAtoDFA(const DeterministicFiniteAutomaton& afn);

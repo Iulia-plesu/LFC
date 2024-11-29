@@ -1,6 +1,12 @@
 ﻿#include"DeterministicFiniteAutomaton.h"
 #include<iostream>
 #include<queue>
+#include <queue>
+#include <stack>
+#include <map>
+#include <set>
+#include <string>
+#include<iomanip>
 
 DeterministicFiniteAutomaton::DeterministicFiniteAutomaton(const std::set<std::string>& Q, 
 	const std::set<char>& sigma, 
@@ -54,19 +60,19 @@ void DeterministicFiniteAutomaton::AddTransition(const std::string& startState, 
 
 bool DeterministicFiniteAutomaton::VerifyAutomaton() const
 {
-	// Verificăm dacă toate stările din tranziții există în mulțimea de stări m_Q
+	
 	for (const auto& transition : m_delta) {
-		const std::string& fromState = transition.first.first; // Starea de plecare
-		char symbol = transition.first.second; // Simbolul de tranziție
-		const std::set<std::string>& toStates = transition.second; // Setul de stări de destinație
+		const std::string& fromState = transition.first.first; 
+		char symbol = transition.first.second; 
+		const std::set<std::string>& toStates = transition.second; 
 
-		// Verificăm dacă starea de plecare există în stările definite
+		
 		if (m_Q.find(fromState) == m_Q.end()) {
 			std::cerr << "Error: Start state " << fromState << " not in states.\n";
 			return false;
 		}
 
-		// Verificăm dacă toate stările de destinație există în stările definite
+		
 		for (const auto& toState : toStates) {
 			if (m_Q.find(toState) == m_Q.end()) {
 				std::cerr << "Error: End state " << toState << " not in states.\n";
@@ -133,6 +139,60 @@ const std::map<std::pair<std::string, char>, std::set<std::string>>& Determinist
 {
 	 return m_delta; 
 }
+
+void DeterministicFiniteAutomaton::PrintTransitionTable(const DeterministicFiniteAutomaton& dfa)
+{
+	const auto& states = m_Q;
+	const auto& alphabet = m_sigma;
+	const auto& transitions = m_delta;
+	const auto& initialState = m_q0;
+	const auto& finalStates = m_F;
+
+
+	size_t maxStateLength = 0;
+	for (const auto& state : states) {
+		maxStateLength = std::max(maxStateLength, state.length());
+	}
+	size_t columnWidth = std::max(maxStateLength + 2, size_t(5)); 
+
+
+	std::cout << std::string(columnWidth, ' ') << " |";
+	for (const char symbol : alphabet) {
+		std::cout << " " << std::setw(columnWidth) << symbol;
+	}
+	std::cout << "\n" << std::string(columnWidth, '-') << "-+-";
+	for (size_t i = 0; i < alphabet.size(); ++i) {
+		std::cout << std::string(columnWidth, '-');
+		if (i != alphabet.size() - 1) std::cout << "-";
+	}
+	std::cout << "\n";
+
+	
+	for (const std::string& state : states) {
+		
+		std::string stateDisplay = state;
+		if (state == initialState) {
+			stateDisplay = "*" + stateDisplay; 
+		}
+		if (finalStates.count(state)) {
+			stateDisplay= '^'+stateDisplay; 
+		}
+
+		std::cout << std::setw(columnWidth) << stateDisplay << " |";
+
+		for (const char symbol : alphabet) {
+			auto it = transitions.find({ state, symbol });
+			if (it != transitions.end() && !it->second.empty()) {
+				std::cout << " " << std::setw(columnWidth) << *it->second.begin();
+			}
+			else {
+				std::cout << " " << std::setw(columnWidth) << "-";
+			}
+		}
+		std::cout << "\n";
+	}
+}
+
 
 int priority(char op)
 {
@@ -203,21 +263,20 @@ std::string polishForm(const std::string& expression)
 	return pForm;
 }
 
-int stateCounter = 0;
 
-// Funcție pentru a genera un nume unic de stare
 std::string GenerateUniqueState() {
+	static int stateCounter = 0; 
 	std::ostringstream stateName;
 	stateName << "q" << stateCounter++;
 	return stateName.str();
 }
 
 DeterministicFiniteAutomaton BuildBasicAutomaton(char symbol) {
-    // Generăm stări unice
+    
     std::string initialState = GenerateUniqueState();
     std::string finalState = GenerateUniqueState();
 
-    // Construim automatul
+
     std::set<std::string> states = { initialState, finalState };
     std::set<char> alphabet = { symbol };
     std::set<std::string> finalStates = { finalState };
@@ -232,14 +291,14 @@ DeterministicFiniteAutomaton Concatenate(const DeterministicFiniteAutomaton& a1,
 {
 	
 	std::set<std::string> states{ a1.GetStates() };
-	states.insert(a2.GetStates().begin(), a2.GetStates().end());  // Adăugăm stările lui a2
+	states.insert(a2.GetStates().begin(), a2.GetStates().end()); 
 
 	// 2. Combină alfabetul celor două automate
 	std::set<char> alphabet = a1.GetAlphabet();
-	alphabet.insert(a2.GetAlphabet().begin(), a2.GetAlphabet().end()); // Adăugăm alfabetul lui a2
+	alphabet.insert(a2.GetAlphabet().begin(), a2.GetAlphabet().end()); 
 
 	// 3. Adaugă tranzițiile celor două automate
-	std::map<std::pair<std::string, char>, std::set<std::string>> transitions = a1.GetTransitions();  // Tranzițiile lui a1
+	std::map<std::pair<std::string, char>, std::set<std::string>> transitions = a1.GetTransitions();  
 	auto a2Transitions = a2.GetTransitions();  // Tranzițiile lui a2
 
 	// Adăugăm tranzițiile din a2 la a1
@@ -349,5 +408,106 @@ DeterministicFiniteAutomaton BuildAutomatonFromRPN(const std::string& rpn)
 	return stack.top();  // Automat rezultat
 }
 
+std::set<std::string> LambdaClosure(const std::string& state, const std::map<std::pair<std::string, char>, std::set<std::string>>& transitions)
+{
+	std::set<std::string> closure;
+	std::stack<std::string> stack;
+
+	// Adăugăm starea inițială în închidere și pe stivă
+	closure.insert(state);
+	stack.push(state);
+
+	// Procesăm toate stările accesibile prin lambda
+	while (!stack.empty()) {
+		std::string currentState = stack.top();
+		stack.pop();
+
+		auto it = transitions.find({ currentState, '\0' });
+		if (it != transitions.end()) {
+			for (const auto& nextState : it->second) {
+				if (closure.find(nextState) == closure.end()) {
+					closure.insert(nextState);
+					stack.push(nextState);
+				}
+			}
+		}
+	}
+
+	return closure;
+}
+
+DeterministicFiniteAutomaton ConvertLambdaNFAtoDFA(const DeterministicFiniteAutomaton& afn)
+{
+	// Harta tranzițiilor AFD
+	std::map<std::pair<std::string, char>, std::set<std::string>> dfaTransitions;
+
+	// Seturi pentru stările și tranzițiile AFD
+	std::set<std::string> dfaStates;
+	std::string dfaInitialState;
+	std::set<std::string> dfaFinalStates;
+
+	// Coada pentru procesarea stărilor
+	std::queue<std::set<std::string>> queue;
+	std::map<std::set<std::string>, std::string> stateNames;
+	int stateCounter = 0;
+
+	// Calculăm \lambda-închiderea stării inițiale
+	std::set<std::string> initialClosure = LambdaClosure(afn.GetInitialState(), afn.GetTransitions());
+	queue.push(initialClosure);
+	stateNames[initialClosure] = "q" + std::to_string(stateCounter);
+	dfaInitialState = "q" + std::to_string(stateCounter);
+	dfaStates.insert(dfaInitialState);
+	stateCounter++;
+
+	// Procesăm toate stările
+	while (!queue.empty()) {
+		std::set<std::string> currentSet = queue.front();
+		queue.pop();
+		std::string currentStateName = stateNames[currentSet];
+
+		for (char symbol : afn.GetAlphabet()) {
+			std::set<std::string> newState;
+
+			// Generăm noile stări prin tranziții și calculăm închiderea \lambda
+			for (const auto& state : currentSet) {
+				auto it = afn.GetTransitions().find({ state, symbol });
+				if (it != afn.GetTransitions().end()) {
+					for (const auto& nextState : it->second) {
+						auto closure = LambdaClosure(nextState, afn.GetTransitions());
+						newState.insert(closure.begin(), closure.end());
+					}
+				}
+			}
+
+			// Dacă s-a generat o stare nouă
+			if (!newState.empty()) {
+				if (stateNames.find(newState) == stateNames.end()) {
+					stateNames[newState] = "q" + std::to_string(stateCounter);
+					dfaStates.insert(stateNames[newState]);
+					queue.push(newState);
+					stateCounter++;
+				}
+				// Adăugăm tranziția
+				dfaTransitions[{currentStateName, symbol}].insert(stateNames[newState]);
+			}
+		}
+	}
+
+	// Determinăm stările finale ale AFD
+	for (auto it = stateNames.begin(); it != stateNames.end(); ++it) {
+		const std::set<std::string>& stateSet = it->first; // Mulțimea de stări
+		const std::string& name = it->second;             // Numele stării în AFD
+
+		for (const auto& state : stateSet) {
+			if (afn.GetFinalStates().count(state)) {
+				dfaFinalStates.insert(name);
+				break;
+			}
+		}
+	}
+
+	// Returnăm automatul determinist generat
+	return DeterministicFiniteAutomaton(dfaStates, afn.GetAlphabet(), dfaTransitions, dfaInitialState, dfaFinalStates);
+}
 
 

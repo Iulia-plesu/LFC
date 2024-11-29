@@ -5,6 +5,7 @@
 #include<regex>
 #include "DeterministicFiniteAutomaton.h"
 
+
 bool IsValidRegex(const std::string& expression) {
     try {
         std::regex testRegex(expression); 
@@ -84,59 +85,65 @@ int main() {
     std::string rpn = polishForm(regex);
     DeterministicFiniteAutomaton nfa;
     nfa = BuildAutomatonFromRPN(rpn); 
-    nfa.PrintAutomaton();
+    DeterministicFiniteAutomaton dfa;
+    dfa = ConvertLambdaNFAtoDFA(nfa);
     char option;
-    //do {
-    //    DisplayMenu();
-    //    std::cout << "Select the desired option: ";
-    //    std::cin >> option;
+    do {
+        DisplayMenu();
+        std::cout << "Select the desired option: ";
+        std::cin >> option;
 
-    //    switch (option) {
-    //    case 'a':
-    //        std::cout << "Readable regular expression: " << rpn << "\n";
-    //        break;
+        switch (option) {
+        case 'a':
+            std::cout << "Readable regular expression: " << rpn << "\n";
+            break;
 
-    //    case 'b':
-    //        std::cout << "Displaying automaton M:\n";
-    //       /* WriteAutomatonToFile(dfa, "output.txt");*/
-    //        break;
+        case 'b':
+            std::cout << "Displaying automaton M:\n";
+            dfa.PrintAutomaton();
+            std::cout << '\n';
+            dfa.PrintTransitionTable(dfa);
+            WriteAutomatonToFile(dfa, "output.txt");
+            break;
 
-    //    case 'c': {
-    //        std::string word;
-    //        std::cout << "Enter the word to check: ";
-    //        std::cin >> word;
-    //        if (dfa.CheckWord(word)) {
-    //            std::cout << "The word \"" << word << "\" is accepted by the automaton.\n";
-    //        }
-    //        else {
-    //            std::cout << "The word \"" << word << "\" is not accepted by the automaton.\n";
-    //        }
-    //        break;
-    //    }
-    //    case 'd':
-    //    {
-    //        std::cout << "Nondeterministic automaton with lambda transitions:\n";
-    //        nfa.PrintAutomaton();
-    //        break;
-    //    }
-    //    case 'e':
-    //        if (dfa.VerifyAutomaton())
-    //        {
-    //            std::cout << "Is a valid automaton\n";
-    //        }
-    //        else
-    //        {
-    //            std::cout << "Is not a valid automaton \n";
-    //        }
-    //        break;
-    //    case 'f':
-    //        std::cout << "Exiting the program.\n";
-    //        break;
-    //    default:
-    //        std::cout << "Invalid option. Please try again.\n";
-    //    }
+        case 'c': {
+            std::string word;
+            std::cout << "Enter the word to check: ";
+            std::cin >> word;
+            if (dfa.CheckWord(word)) {
+                std::cout << "The word \"" << word << "\" is accepted by the automaton.\n";
+            }
+            else {
+                std::cout << "The word \"" << word << "\" is not accepted by the automaton.\n";
+            }
+            break;
+        }
+        case 'd':
+        {
+            std::cout << "Nondeterministic automaton with lambda transitions:\n";
+            nfa.PrintAutomaton();
+            std::cout << '\n';
+            nfa.PrintTransitionTable(nfa);
+            break;
+        }
+        case 'e':
+            if (dfa.VerifyAutomaton())
+            {
+                std::cout <<"Is a valid automaton\n";
+            }
+            else
+            {
+                std::cout << "Is not a valid automaton \n";
+            }
+            break;
+        case 'f':
+            std::cout << "Exiting the program.\n";
+            break;
+        default:
+            std::cout << "Invalid option. Please try again.\n";
+        }
 
-    //} while (option != 'f');
+    } while (option != 'f');
 
     return 0;
 }
