@@ -31,20 +31,6 @@ public:
         const std::string& q0,
         const std::set<std::string>& F);
 
-    void addState(const std::string& state, bool isFinal = false) {
-        m_Q.insert(state);
-        if (isFinal) {
-            m_F.insert(state);
-        }
-    }
-
-    
-    void setInitialState(const std::string& state) {
-        m_q0 = state;
-        m_Q.insert(state);
-    }
-
-
     bool CheckWord(const std::string& input) const;
 
     void AddTransition(const std::string& startState, char symbol, const std::string& endState);
