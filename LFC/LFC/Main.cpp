@@ -4,18 +4,19 @@
 #include <stack>
 #include<regex>
 #include "DeterministicFiniteAutomaton.h"
+#include"Operation.h"
 
 
 bool IsValidRegex(const std::string& expression) {
     try {
-        std::regex testRegex(expression); 
+        std::regex testRegex(expression);
     }
     catch (const std::regex_error& e) {
-        // Catch exceptions thrown by invalid regex
+      
         std::cerr << "Error: Invalid regular expression. " << e.what() << "\n";
         return false;
     }
-    return true; // Regex is valid
+    return true; 
 }
 
 void DisplayMenu() {
@@ -56,7 +57,7 @@ void WriteAutomatonToFile(const DeterministicFiniteAutomaton& dfa, const std::st
     }
 
     file << "\nTransitions:\n";
-    // Iterating over transitions
+   
     for (const auto& transition : dfa.GetTransitions()) {
         const auto& fromState = transition.first.first;
         char symbol = transition.first.second;
@@ -82,11 +83,18 @@ int main() {
     }
     std::cout << "The regular expression is valid.\n";
 
-    std::string rpn = polishForm(regex);
-    DeterministicFiniteAutomaton nfa;
-    nfa = BuildAutomatonFromRPN(rpn); 
-    DeterministicFiniteAutomaton dfa;
-    dfa = ConvertLambdaNFAtoDFA(nfa);
+
+    Operation operation;
+
+
+    std::string rpn = operation.polishForm(regex);
+
+
+    DeterministicFiniteAutomaton nfa = operation.BuildAutomatonFromRPN(rpn);
+
+
+    DeterministicFiniteAutomaton dfa = operation.ConvertLambdaNFAtoDFA(nfa);
+
     char option;
     do {
         DisplayMenu();
@@ -118,8 +126,7 @@ int main() {
             }
             break;
         }
-        case 'd':
-        {
+        case 'd': {
             std::cout << "Nondeterministic automaton with lambda transitions:\n";
             nfa.PrintAutomaton();
             std::cout << '\n';
@@ -127,12 +134,10 @@ int main() {
             break;
         }
         case 'e':
-            if (dfa.VerifyAutomaton())
-            {
-                std::cout <<"Is a valid automaton\n";
+            if (dfa.VerifyAutomaton()) {
+                std::cout << "Is a valid automaton\n";
             }
-            else
-            {
+            else {
                 std::cout << "Is not a valid automaton \n";
             }
             break;
