@@ -99,7 +99,7 @@ DeterministicFiniteAutomaton Operation::BuildBasicAutomaton(char symbol)
 	return dfa;
 }
 
-DeterministicFiniteAutomaton Operation::Concatenate(const DeterministicFiniteAutomaton& a1, const DeterministicFiniteAutomaton& a2)
+DeterministicFiniteAutomaton Operation::Alternate(const DeterministicFiniteAutomaton& a1, const DeterministicFiniteAutomaton& a2)
 {
 	std::set<std::string> states{ a1.GetStates() };
 	states.insert(a2.GetStates().begin(), a2.GetStates().end());
@@ -132,7 +132,7 @@ DeterministicFiniteAutomaton Operation::Concatenate(const DeterministicFiniteAut
 	return DeterministicFiniteAutomaton(states, alphabet, transitions, initialState, finalStates);
 }
 
-DeterministicFiniteAutomaton Operation::Union(const DeterministicFiniteAutomaton& a1, const DeterministicFiniteAutomaton& a2)
+DeterministicFiniteAutomaton Operation::Concatenate(const DeterministicFiniteAutomaton& a1, const DeterministicFiniteAutomaton& a2)
 {
 	// 1. Generam stari unice pentru new_start și new_final
 	std::string newStart = GenerateUniqueState();
@@ -205,12 +205,12 @@ DeterministicFiniteAutomaton Operation::BuildAutomatonFromRPN(const std::string&
 		else if (c == '.') {
 			auto a2 = stack.top(); stack.pop();
 			auto a1 = stack.top(); stack.pop();
-			stack.push(Concatenate(a1, a2));
+			stack.push(Alternate(a1, a2));
 		}
 		else if (c == '|') {
 			auto a2 = stack.top(); stack.pop();
 			auto a1 = stack.top(); stack.pop();
-			stack.push(Union(a1, a2));
+			stack.push(Concatenate(a1, a2));
 		}
 		else if (c == '*') {
 			auto a = stack.top();

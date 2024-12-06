@@ -12,10 +12,10 @@ public:
 
     DeterministicFiniteAutomaton BuildBasicAutomaton(char symbol);
 
-    DeterministicFiniteAutomaton Concatenate(const DeterministicFiniteAutomaton& a1, const DeterministicFiniteAutomaton& a2);
+    DeterministicFiniteAutomaton Alternate(const DeterministicFiniteAutomaton& a1, const DeterministicFiniteAutomaton& a2);
 
    
-    DeterministicFiniteAutomaton Union(const DeterministicFiniteAutomaton& a1, const DeterministicFiniteAutomaton& a2);
+    DeterministicFiniteAutomaton Concatenate(const DeterministicFiniteAutomaton& a1, const DeterministicFiniteAutomaton& a2);
 
     DeterministicFiniteAutomaton Star(const DeterministicFiniteAutomaton& a);
 
