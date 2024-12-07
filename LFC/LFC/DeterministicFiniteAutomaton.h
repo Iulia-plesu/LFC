@@ -13,13 +13,16 @@ private:
 
 public:
     DeterministicFiniteAutomaton() = default;
-    DeterministicFiniteAutomaton(const std::set<std::string>& Q,
+    DeterministicFiniteAutomaton(
+        const std::set<std::string>& Q,
         const std::set<char>& sigma,
         const std::string& q0,
         const std::set<std::string>& F);
-    DeterministicFiniteAutomaton(const std::set<std::string>& Q,
+    DeterministicFiniteAutomaton(
+        const std::set<std::string>& Q,
         const std::set<char>& sigma,
-        const std::map<std::pair<std::string, char>, std::set<std::string>>& delta,
+        const std::map<std::pair<std::string, char>, 
+        std::set<std::string>>& delta,
         const std::string& q0,
         const std::set<std::string>& F);
 
@@ -36,9 +39,7 @@ public:
     const std::set<char>& GetAlphabet() const;
 
 
-
     const  std::string& GetInitialState() const;
-
 
 
     const std::set<std::string>& GetFinalStates() const;
@@ -47,7 +48,6 @@ public:
     const std::map<std::pair<std::string, char>, std::set<std::string>>& GetTransitions() const;
 
     void PrintTransitionTable(const DeterministicFiniteAutomaton& dfa);
-
 
 };
 

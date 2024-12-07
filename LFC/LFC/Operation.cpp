@@ -1,12 +1,12 @@
 ﻿#include "Operation.h"
-#include<iostream>
+#include <iostream>
 #include <queue>
 #include <stack>
 #include <map>
 #include <set>
 #include <string>
-#include<iomanip>
-#include<sstream>
+#include <iomanip>
+#include <sstream>
 
 int Operation::priority(char op)
 {
@@ -31,35 +31,37 @@ std::string Operation::polishForm(const std::string& expression)
 		if (current == ' ')
 			continue;
 
-		if (isalnum(current)) {
-
+		if (isalnum(current)) 
+		{
 			polish.push(current);
 		}
-		else if (current == '(') {
-			if (prevChar == ')' || prevChar == '(')
-				return "Parantezerea este incorecta";
-			op_stack.push(current);
-		}
-		else if (current == ')') {
-			if (prevChar == '(' || prevChar == ')')
-				return "Parantezerea este incorecta";
-			while (!op_stack.empty() && op_stack.top() != '(') {
-				polish.push(op_stack.top());
-				op_stack.pop();
+		else 
+			if (current == '(') {
+				if (prevChar == ')' || prevChar == '(')
+					return "Parantezerea este incorecta";
+				op_stack.push(current);
 			}
-			if (!op_stack.empty())
-				op_stack.pop();
-		}
-
-		else {
-			if (priority(current) == -1)
-				return "Caractere nepermise";
-			while (!op_stack.empty() && priority(op_stack.top()) >= priority(current)) {
-				polish.push(op_stack.top());
-				op_stack.pop();
+			else{
+				if (current == ')') {
+					if (prevChar == '(' || prevChar == ')')
+						return "Parantezerea este incorecta";
+					while (!op_stack.empty() && op_stack.top() != '(') {
+						polish.push(op_stack.top());
+						op_stack.pop();
+					}
+					if (!op_stack.empty())
+						op_stack.pop();
+				}
+				else {
+					if (priority(current) == -1)
+						return "Caractere nepermise";
+					while (!op_stack.empty() && priority(op_stack.top()) >= priority(current)) {
+						polish.push(op_stack.top());
+						op_stack.pop();
+					}
+					op_stack.push(current);
+				}
 			}
-			op_stack.push(current);
-		}
 		prevChar = current;
 	}
 
