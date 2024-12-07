@@ -22,7 +22,7 @@ DeterministicFiniteAutomaton::DeterministicFiniteAutomaton(const std::set<std::s
 
 bool DeterministicFiniteAutomaton::CheckWord(const std::string& input) const 
 {
-	std::string currentState = m_q0; // Starea de start
+	std::string currentState = m_q0; 
 
 	for (char symbol : input) 
 	{

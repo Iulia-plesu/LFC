@@ -106,50 +106,47 @@ DeterministicFiniteAutomaton Operation::Alternate(const DeterministicFiniteAutom
 	std::set<std::string> states{ a1.GetStates() };
 	states.insert(a2.GetStates().begin(), a2.GetStates().end());
 
-	// 2. Combina alfabetul celor doua automate
+	// Combine alphabet from both automaton
 	std::set<char> alphabet = a1.GetAlphabet();
 	alphabet.insert(a2.GetAlphabet().begin(), a2.GetAlphabet().end());
 
-	// 3. Adauga tranzitiile celor douaautomate
+	// Add traniztions from both automaton
 	std::map<std::pair<std::string, char>, std::set<std::string>> transitions = a1.GetTransitions();
-	auto a2Transitions = a2.GetTransitions();  // Tranzitiile lui a2
+	auto a2Transitions = a2.GetTransitions();  //a2 Tranzitions
 
 	// Adaugam tranzitiile din a2 la a1
 	for (const auto& transition : a2Transitions) {
 		transitions[transition.first] = transition.second;
 	}
 
-	// 4. Starea initiala este cea a primului automat
+	
 	std::string initialState = a1.GetInitialState();
 
-	// 5. Starile finale sunt cele ale celui de-al doilea automat
 	std::set<std::string> finalStates = a2.GetFinalStates();
 
-	// 6. Adaugam tranzitie epsilon de la starile finale ale lui a1 la starea initiaala a lui a2
+	// Add lamda tranzitions
 	for (const auto& state : a1.GetFinalStates()) {
-		transitions[{state, '\0'}].insert(a2.GetInitialState());  // Epsilon tranzitie de la q1 din a1 la q1 din a2
+		transitions[{state, '\0'}].insert(a2.GetInitialState()); 
 	}
 
-	// 7. Returnam noul DFA concatenat
 	return DeterministicFiniteAutomaton(states, alphabet, transitions, initialState, finalStates);
 }
 
 DeterministicFiniteAutomaton Operation::Concatenate(const DeterministicFiniteAutomaton& a1, const DeterministicFiniteAutomaton& a2)
 {
-	// 1. Generam stari unice pentru new_start și new_final
 	std::string newStart = GenerateUniqueState();
 	std::string newFinal = GenerateUniqueState();
 
-	// 2. Combinam stările
+	// Combine states
 	std::set<std::string> states = { newStart, newFinal };
 	states.insert(a1.GetStates().begin(), a1.GetStates().end());
 	states.insert(a2.GetStates().begin(), a2.GetStates().end());
 
-	// 3. Combinam alfabetele
+	
 	std::set<char> alphabet = a1.GetAlphabet();
 	alphabet.insert(a2.GetAlphabet().begin(), a2.GetAlphabet().end());
 
-	// 4. Combinam tranzitiile
+	// Combine tranzitions
 	std::map<std::pair<std::string, char>, std::set<std::string>> transitions = a1.GetTransitions();
 	auto a2Transitions = a2.GetTransitions();
 	transitions.insert(a2Transitions.begin(), a2Transitions.end());
@@ -164,31 +161,28 @@ DeterministicFiniteAutomaton Operation::Concatenate(const DeterministicFiniteAut
 		transitions[{state, '\0'}].insert(newFinal);
 	}
 
-	// 5. Returnam noul automat
 	return DeterministicFiniteAutomaton(states, alphabet, transitions, newStart, { newFinal });
 }
 
 DeterministicFiniteAutomaton Operation::Star(const DeterministicFiniteAutomaton& a)
 {
-	// Generam stari noi pentru start și final
 	std::string newStart = GenerateUniqueState();
 	std::string newFinal = GenerateUniqueState();
 
-	// Combinam stările
+	
 	std::set<std::string> states = { newStart, newFinal };
 	states.insert(a.GetStates().begin(), a.GetStates().end());
 
-	// Preluam alfabetul și tranzitiile existente
 	std::set<char> alphabet = a.GetAlphabet();
 	std::map<std::pair<std::string, char>, std::set<std::string>> transitions = a.GetTransitions();
 
-	// Adaugam tranzitii lambda
-	transitions[{newStart, '\0'}].insert(a.GetInitialState());  // new_start -> vechea stare initiala
+	// Add lambda tranzitions
+	transitions[{newStart, '\0'}].insert(a.GetInitialState());  // new_start -> old initial state
 	transitions[{newStart, '\0'}].insert(newFinal);            // new_start -> new_final
 	for (const auto& state : a.GetFinalStates())
 	{
-		transitions[{state, '\0'}].insert(a.GetInitialState()); // vechea stare finala -> vechea stare initiala
-		transitions[{state, '\0'}].insert(newFinal);           // vechea stare finala -> new_final
+		transitions[{state, '\0'}].insert(a.GetInitialState()); // old final state -> old initial state
+		transitions[{state, '\0'}].insert(newFinal);           // old final state -> new_final
 	}
 
 
@@ -221,7 +215,7 @@ DeterministicFiniteAutomaton Operation::BuildAutomatonFromRPN(const std::string&
 		}
 	}
 
-	return stack.top();  // Automat rezultat
+	return stack.top();  
 }
 
 std::set<std::string> Operation::LambdaClosure(const std::string& state, const std::map<std::pair<std::string, char>, std::set<std::string>>& transitions)
@@ -229,11 +223,11 @@ std::set<std::string> Operation::LambdaClosure(const std::string& state, const s
 	std::set<std::string> closure;
 	std::stack<std::string> stack;
 
-	// Adaugam starea initiala in inchidere si pe stiva
+	
 	closure.insert(state);
 	stack.push(state);
 
-	// Procesam toate starile accesibile prin lambda
+	// Process all tranzition with contains lambda
 	while (!stack.empty()) {
 		std::string currentState = stack.top();
 		stack.pop();
@@ -257,17 +251,17 @@ DeterministicFiniteAutomaton Operation::ConvertLambdaNFAtoDFA(const Deterministi
 
 	std::map<std::pair<std::string, char>, std::set<std::string>> dfaTransitions;
 
-	// Seturi pentru strile si tranzitiile AFD
+	
 	std::set<std::string> dfaStates;
 	std::string dfaInitialState;
 	std::set<std::string> dfaFinalStates;
 
-	// Coada pentru procesarea starilor
+	// Queue for processing states
 	std::queue<std::set<std::string>> queue;
 	std::map<std::set<std::string>, std::string> stateNames;
 	int stateCounter = 0;
 
-	// Calculam \lambda-inchiderea starii initiale
+	// Calculate lamda closuri from initial states
 	std::set<std::string> initialClosure = LambdaClosure(afn.GetInitialState(), afn.GetTransitions());
 	queue.push(initialClosure);
 	stateNames[initialClosure] = "q" + std::to_string(stateCounter);
@@ -275,7 +269,7 @@ DeterministicFiniteAutomaton Operation::ConvertLambdaNFAtoDFA(const Deterministi
 	dfaStates.insert(dfaInitialState);
 	stateCounter++;
 
-	// Procesam toate starile
+	//Process all states
 	while (!queue.empty()) {
 		std::set<std::string> currentSet = queue.front();
 		queue.pop();
@@ -295,7 +289,6 @@ DeterministicFiniteAutomaton Operation::ConvertLambdaNFAtoDFA(const Deterministi
 				}
 			}
 
-			// Daca s-a generat o stare nouă
 			if (!newState.empty()) {
 				if (stateNames.find(newState) == stateNames.end()) {
 					stateNames[newState] = "q" + std::to_string(stateCounter);
@@ -303,16 +296,16 @@ DeterministicFiniteAutomaton Operation::ConvertLambdaNFAtoDFA(const Deterministi
 					queue.push(newState);
 					stateCounter++;
 				}
-				// Adaugam tranziția
+				//add tranzitions
 				dfaTransitions[{currentStateName, symbol}].insert(stateNames[newState]);
 			}
 		}
 	}
 
-	// Determinam starile finale ale AFD
+	
 	for (auto it = stateNames.begin(); it != stateNames.end(); ++it) {
-		const std::set<std::string>& stateSet = it->first; // Multimea de stari
-		const std::string& name = it->second;             // Numele starii in AFD
+		const std::set<std::string>& stateSet = it->first;
+		const std::string& name = it->second;             
 
 		for (const auto& state : stateSet) {
 			if (afn.GetFinalStates().count(state)) {
@@ -322,7 +315,6 @@ DeterministicFiniteAutomaton Operation::ConvertLambdaNFAtoDFA(const Deterministi
 		}
 	}
 
-	// Returnam automatul determinist generat
 	return DeterministicFiniteAutomaton(dfaStates, afn.GetAlphabet(), dfaTransitions, dfaInitialState, dfaFinalStates);
 }
 
