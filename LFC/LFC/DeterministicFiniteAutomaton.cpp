@@ -47,6 +47,7 @@ void DeterministicFiniteAutomaton::AddTransition(const std::string& startState, 
 	m_delta[{startState, symbol}].insert(endState);
 }
 
+
 bool DeterministicFiniteAutomaton::VerifyAutomaton() const
 {
 	for (const auto& transition : m_delta) 
@@ -68,6 +69,21 @@ bool DeterministicFiniteAutomaton::VerifyAutomaton() const
 				std::cerr << "Error: End state " << toState << " not in states.\n";
 				return false;
 			}
+		}
+		if (m_sigma.find(symbol) == m_sigma.end())
+		{
+			std::cerr << "Error: symbol " << symbol << " not in alphabet.\n";
+		}
+
+	}
+	if (m_Q.find(m_q0) == m_Q.end()) {
+		std::cerr << "Initial state " << m_q0 << " is not in the set of states.\n";
+		return false;
+	}
+	for (const auto& finalState : m_F) {
+		if (m_Q.find(finalState) == m_Q.end()) {
+			std::cerr << "Final state " << finalState << " is not in the set of states.\n";
+			return false;
 		}
 	}
 	return true;

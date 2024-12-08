@@ -14,7 +14,7 @@ int Operation::priority(char op)
 		return 1;
 	if (op == '.')
 		return 2;
-	if (op == '*')
+	if (op == '*' || op=='+')
 		return 3;
 	if (op == '(' || op == ')')
 		return 0;
@@ -190,6 +190,31 @@ DeterministicFiniteAutomaton Operation::Star(const DeterministicFiniteAutomaton&
 
 }
 
+DeterministicFiniteAutomaton Operation::Plus(const DeterministicFiniteAutomaton& a)
+{
+	std::string newStart = GenerateUniqueState();
+	std::string newFinal = GenerateUniqueState();
+
+
+	std::set<std::string> states = { newStart, newFinal };
+	states.insert(a.GetStates().begin(), a.GetStates().end());
+
+	std::set<char> alphabet = a.GetAlphabet();
+	std::map<std::pair<std::string, char>, std::set<std::string>> transitions = a.GetTransitions();
+
+	// Add lambda tranzitions
+	transitions[{newStart, '\0'}].insert(a.GetInitialState());  // new_start -> old initial state
+	for (const auto& state : a.GetFinalStates())
+	{
+		transitions[{state, '\0'}].insert(a.GetInitialState()); // old final state -> old initial state
+		transitions[{state, '\0'}].insert(newFinal);           // old final state -> new_final
+	}
+
+
+	return DeterministicFiniteAutomaton(states, alphabet, transitions, newStart, { newFinal });
+
+}
+
 DeterministicFiniteAutomaton Operation::BuildAutomatonFromRPN(const std::string& rpn)
 {
 	std::stack<DeterministicFiniteAutomaton> stack;
@@ -213,6 +238,12 @@ DeterministicFiniteAutomaton Operation::BuildAutomatonFromRPN(const std::string&
 			stack.pop();
 			stack.push(Star(a));
 		}
+		else if (c == '+')
+		{
+			auto a = stack.top();
+			stack.pop();
+			stack.push(Plus(a));
+		}
 	}
 
 	return stack.top();  
@@ -221,23 +252,23 @@ DeterministicFiniteAutomaton Operation::BuildAutomatonFromRPN(const std::string&
 std::set<std::string> Operation::LambdaClosure(const std::string& state, const std::map<std::pair<std::string, char>, std::set<std::string>>& transitions)
 {
 	std::set<std::string> closure;
-	std::stack<std::string> stack;
+	std::queue<std::string> queue;
 
 	
 	closure.insert(state);
-	stack.push(state);
+	queue.push(state);
 
 	// Process all tranzition with contains lambda
-	while (!stack.empty()) {
-		std::string currentState = stack.top();
-		stack.pop();
+	while (!queue.empty()) {
+		std::string currentState = queue.front();
+		queue.pop();
 
 		auto it = transitions.find({ currentState, '\0' });
 		if (it != transitions.end()) {
 			for (const auto& nextState : it->second) {
 				if (closure.find(nextState) == closure.end()) {
 					closure.insert(nextState);
-					stack.push(nextState);
+					queue.push(nextState);
 				}
 			}
 		}
@@ -257,28 +288,32 @@ DeterministicFiniteAutomaton Operation::ConvertLambdaNFAtoDFA(const Deterministi
 	std::set<std::string> dfaFinalStates;
 
 	// Queue for processing states
-	std::queue<std::set<std::string>> queue;
+	std::stack<std::set<std::string>> stack;
 	std::map<std::set<std::string>, std::string> stateNames;
 	int stateCounter = 0;
 
 	// Calculate lamda closuri from initial states
 	std::set<std::string> initialClosure = LambdaClosure(afn.GetInitialState(), afn.GetTransitions());
-	queue.push(initialClosure);
+	for (auto a : initialClosure)
+	{
+		std::cout << a << '\n';
+	}
+	stack.push(initialClosure);
 	stateNames[initialClosure] = "q" + std::to_string(stateCounter);
 	dfaInitialState = "q" + std::to_string(stateCounter);
 	dfaStates.insert(dfaInitialState);
 	stateCounter++;
 
 	//Process all states
-	while (!queue.empty()) {
-		std::set<std::string> currentSet = queue.front();
-		queue.pop();
+	while (!stack.empty()) {
+		std::set<std::string> currentSet = stack.top();
+		stack.pop();
 		std::string currentStateName = stateNames[currentSet];
 
 		for (char symbol : afn.GetAlphabet()) {
 			std::set<std::string> newState;
 
-			// Generam noile stari prin tranzitii si calculam inchiderea \lambda
+			//Generat new states from tranzitions and calculate lamda closure
 			for (const auto& state : currentSet) {
 				auto it = afn.GetTransitions().find({ state, symbol });
 				if (it != afn.GetTransitions().end()) {
@@ -293,7 +328,7 @@ DeterministicFiniteAutomaton Operation::ConvertLambdaNFAtoDFA(const Deterministi
 				if (stateNames.find(newState) == stateNames.end()) {
 					stateNames[newState] = "q" + std::to_string(stateCounter);
 					dfaStates.insert(stateNames[newState]);
-					queue.push(newState);
+					stack.push(newState);
 					stateCounter++;
 				}
 				//add tranzitions

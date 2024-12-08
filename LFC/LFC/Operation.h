@@ -18,6 +18,8 @@ public:
 
     DeterministicFiniteAutomaton Star(const DeterministicFiniteAutomaton& a);
 
+    DeterministicFiniteAutomaton Plus(const DeterministicFiniteAutomaton& a);
+
     DeterministicFiniteAutomaton BuildAutomatonFromRPN(const std::string& rpn);
 
     std::set<std::string> LambdaClosure(
