@@ -12,11 +12,11 @@ FOR: 'for';
 WHILE: 'while';
 RETURN: 'return';
 
-ID: [a-zA-Z_][a-zA-Z0-9_]*; // Identifiers
+ID: [a-zA-Z_][a-zA-Z0-9_]*;
 
-NUMERIC: [0-9]+ ('.' [0-9]+)?; // Numbers (integer or float)
+NUMERIC: [0-9]+ ('.' [0-9]+)?;
 
-STRING_LITERAL: '"' (~('\\' | '"'))* '"'; // String literals
+STRING_LITERAL: '"' (~('\\' | '"'))* '"';
 
 PLUS: '+';
 MINUS: '-';
@@ -43,17 +43,16 @@ LBRACE: '{';
 RBRACE: '}';
 COMMA: ',';
 SEMICOLON: ';';
-WHITESPACE: [ \t\r\n]+ -> skip; // Skip whitespace
-COMMENT: '/*' .*? '*/' -> skip; // Block comments
-LINE_COMMENT: '//' ~[\r\n]* -> skip; // Line comments
+WHITESPACE: [ \t\r\n]+ -> skip;
+COMMENT: '/*' .*? '*/' -> skip;
+LINE_COMMENT: '//' ~[\r\n]* -> skip;
 
-// Program rules
 program: statement*;
 
-// Statement rules
 statement:
 	globalDeclaration
 	| declaration
+	| structDeclaration
 	| assignment
 	| expressionStatement
 	| ifStatement
@@ -61,23 +60,37 @@ statement:
 	| forStatement
 	| returnStatement;
 
-// Global variable declaration
-globalDeclaration:
-	type ID ASSIGN NUMERIC SEMICOLON; // Global variable declaration
-
-// Function declaration
 declaration:
-	type ID LPAREN parameterList? RPAREN block // Function with parameters and block
-	| type ID ASSIGN expression SEMICOLON; // Variable declaration with assignment
+	type ID LPAREN parameterList? RPAREN block
+	| type ID ASSIGN expression SEMICOLON;
 
-parameterList:
-	parameter (COMMA parameter)*; // List of parameters
+globalDeclaration: type ID ASSIGN NUMERIC SEMICOLON;
 
-parameter: type ID; // Parameter definition
+structDeclaration:
+	'struct' ID LBRACE structMember* RBRACE SEMICOLON {
+        // Aici validăm structura, putem colecta membrii și funcțiile
+        // Dacă este necesar, putem valida constructorii sau destructori în această secțiune
+    };
 
-block: LBRACE statement+ RBRACE; // Code block enclosed by braces
+structMember:
+	type ID SEMICOLON
+	| functionDeclaration
+	| constructorDeclaration
+	| destructorDeclaration;
 
-// Assignment rule
+constructorDeclaration:
+	'constructor' LPAREN parameterList? RPAREN block;
+
+destructorDeclaration: 'destructor' LPAREN RPAREN block;
+
+functionDeclaration: type ID LPAREN parameterList? RPAREN block;
+
+parameterList: parameter (COMMA parameter)*;
+
+parameter: type ID;
+
+block: LBRACE statement+ RBRACE;
+
 assignment:
 	ID ASSIGN expression SEMICOLON
 	| ID PLUS_ASSIGN expression SEMICOLON
@@ -85,37 +98,23 @@ assignment:
 	| ID MULT_ASSIGN expression SEMICOLON
 	| ID DIV_ASSIGN expression SEMICOLON;
 
-// Expression statement
 expressionStatement: expression SEMICOLON;
 
-// If statement
-ifStatement:
-	IF LPAREN expression RPAREN block (ELSE block)?; // If with optional else
+ifStatement: IF LPAREN expression RPAREN block (ELSE block)?;
 
-// While loop
 whileStatement: WHILE LPAREN expression RPAREN block;
 
-// For loop
 forStatement:
 	FOR LPAREN forInit expression SEMICOLON expression RPAREN block;
-// For loop with initialization, condition, increment
 
-// For loop initialization
-forInit:
-	declaration
-	| assignment; // Handle variable declarations and assignments in for loop
+forInit: declaration | assignment;
 
-// Return statement
 returnStatement: RETURN expression SEMICOLON;
 
-// Expression rules
-expression:
-	term (binaryOp term)*; // allows binary operators like '+' and '-' between terms
+expression: term (binaryOp term)*;
 
-term:
-	factor (multiplicativeOp factor)*; // Handle multiplicative expressions
+term: factor (multiplicativeOp factor)*;
 
-// Unary operators
 INCREMENT: '++';
 DECREMENT: '--';
 
@@ -124,11 +123,11 @@ factor:
 	| NUMERIC
 	| STRING_LITERAL
 	| LPAREN expression RPAREN
-	| ID LPAREN expressionList? RPAREN // Function calls
-	| INCREMENT ID // Prefix increment
-	| DECREMENT ID // Prefix decrement
-	| ID INCREMENT // Postfix increment
-	| ID DECREMENT; // Postfix decrement
+	| ID LPAREN expressionList? RPAREN
+	| INCREMENT ID
+	| DECREMENT ID
+	| ID INCREMENT
+	| ID DECREMENT;
 
 binaryOp:
 	PLUS
@@ -144,8 +143,6 @@ binaryOp:
 
 multiplicativeOp: MULT | DIV;
 
-expressionList:
-	expression (COMMA expression)*; // List of expressions for function calls
+expressionList: expression (COMMA expression)*;
 
-// Type rules
 type: INT | FLOAT | STRING | VOID | DOUBLE;

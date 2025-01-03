@@ -20,6 +20,25 @@ int addInt(int first, int second){
     }
 }
 
+struct Fraction {
+    int numerator;
+    int denominator;
+
+    constructor(int num, int den) {
+        numerator = num;
+        denominator = den;
+    }
+
+    destructor() {
+        
+    }
+
+    float getFractionValue() {
+        return (float)numerator / denominator;
+    }
+};
+
+
 int main()
 {
     int myFirstVariable = 17;
