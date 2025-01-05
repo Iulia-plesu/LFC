@@ -44,17 +44,17 @@ public interface IMiniLangVisitor<Result> : IParseTreeVisitor<Result> {
 	/// <return>The visitor result.</return>
 	Result VisitStatement([NotNull] MiniLangParser.StatementContext context);
 	/// <summary>
-	/// Visit a parse tree produced by <see cref="MiniLangParser.declaration"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	/// <return>The visitor result.</return>
-	Result VisitDeclaration([NotNull] MiniLangParser.DeclarationContext context);
-	/// <summary>
 	/// Visit a parse tree produced by <see cref="MiniLangParser.globalDeclaration"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	/// <return>The visitor result.</return>
 	Result VisitGlobalDeclaration([NotNull] MiniLangParser.GlobalDeclarationContext context);
+	/// <summary>
+	/// Visit a parse tree produced by <see cref="MiniLangParser.declaration"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitDeclaration([NotNull] MiniLangParser.DeclarationContext context);
 	/// <summary>
 	/// Visit a parse tree produced by <see cref="MiniLangParser.structDeclaration"/>.
 	/// </summary>
@@ -80,11 +80,23 @@ public interface IMiniLangVisitor<Result> : IParseTreeVisitor<Result> {
 	/// <return>The visitor result.</return>
 	Result VisitDestructorDeclaration([NotNull] MiniLangParser.DestructorDeclarationContext context);
 	/// <summary>
+	/// Visit a parse tree produced by <see cref="MiniLangParser.structEnd"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitStructEnd([NotNull] MiniLangParser.StructEndContext context);
+	/// <summary>
 	/// Visit a parse tree produced by <see cref="MiniLangParser.functionDeclaration"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	/// <return>The visitor result.</return>
 	Result VisitFunctionDeclaration([NotNull] MiniLangParser.FunctionDeclarationContext context);
+	/// <summary>
+	/// Visit a parse tree produced by <see cref="MiniLangParser.block"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitBlock([NotNull] MiniLangParser.BlockContext context);
 	/// <summary>
 	/// Visit a parse tree produced by <see cref="MiniLangParser.parameterList"/>.
 	/// </summary>
@@ -98,11 +110,11 @@ public interface IMiniLangVisitor<Result> : IParseTreeVisitor<Result> {
 	/// <return>The visitor result.</return>
 	Result VisitParameter([NotNull] MiniLangParser.ParameterContext context);
 	/// <summary>
-	/// Visit a parse tree produced by <see cref="MiniLangParser.block"/>.
+	/// Visit a parse tree produced by <see cref="MiniLangParser.functionCall"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	/// <return>The visitor result.</return>
-	Result VisitBlock([NotNull] MiniLangParser.BlockContext context);
+	Result VisitFunctionCall([NotNull] MiniLangParser.FunctionCallContext context);
 	/// <summary>
 	/// Visit a parse tree produced by <see cref="MiniLangParser.assignment"/>.
 	/// </summary>
