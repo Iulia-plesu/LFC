@@ -38,7 +38,7 @@ Results will be saved in output.txt.
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-# 📘 LFC Tema 2 - Formal Languages and Compilers
+# 📘 Mini-Compiler Project- Formal Languages and Compilers
 
 # 🚀 Overview
 
