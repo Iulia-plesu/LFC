@@ -90,6 +90,6 @@ Press F5 to start debugging or Ctrl + F5 to run without debugging.
 - Pleșu Iulia-Elena - [github](https://github.com/Iulia-plesu) -iulia.plesu@student.unitbv.ro
 - Oneț Rares-Nicolae - [github](https://github.com/OnetRares) - rares.onet@student.unitbv.ro
  
-This project was developed as part of a coursework on Formal Languages and Compilers e held at Transilvania University of Brasov's [ Faculty of Mathematics and Computer Science ](https://mateinfo.unitbv.ro/ro/) (study programme: Computer Science). 🎓
+This project was developed as part of a coursework on Formal Languages and Compilers held at Transilvania University of Brasov's [ Faculty of Mathematics and Computer Science ](https://mateinfo.unitbv.ro/ro/) (study programme: Computer Science). 🎓
 
 
